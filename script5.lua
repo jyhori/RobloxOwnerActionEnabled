@@ -121,6 +121,24 @@ CreateBtn("Summon Bots", true, function(m)
         p.Color = Color3.new(0,0,0)
         p.Material = "Neon"
         if p:CanSetNetworkOwnership() then p:SetNetworkOwner(game.Players.LocalPlayer) end
+
+        -- [[ ВСТАВИТЬ ВНУТРЬ ЦИКЛА SUMMON BOTS ]]
+        task.spawn(function()
+            local chatRemote = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+            if chatRemote then
+            local sayMsg = chatRemote:FindFirstChild("SayMessageRequest")
+            if sayMsg then
+            -- Список страшных фраз
+                local phrases = {"SYSTEM ERROR: 0x666", "SERVER BREACHED", "RUN.", "ID: Unknown_Bot_"..i.." connected", "DATABASE WIPE INITIATED"}
+                while bot.Parent do
+                    sayMsg:FireServer(phrases[math.random(1, #phrases)], "All")
+                    task.wait(math.random(2, 5)) -- Пауза между сообщениями, чтобы не кикнуло сразу
+            end
+        end
+    end
+end)
+-- [[ КОНЕЦ ВСТАВКИ ]]
+            
     end
 end)
 
@@ -150,21 +168,71 @@ CreateBtn("Connect VIP", false, function()
     _G.AdminLevel = 5 -- Owner HD Admin Bypass
 end)
 
--- [ DCM MODE (DEBUG / OUTPUT / NETWORK) ]
+-- [ ПОЛНЫЙ БЛОК DCM MODE: ВСТАВЛЯТЬ СЮДА ]
 CreateBtn("DCM (Mega Console)", false, function()
+    -- Удаляем старое окно, если оно уже открыто
+    if ScreenGui:FindFirstChild("DCM_Window") then ScreenGui.DCM_Window:Destroy() end
+    
     local DCM = Instance.new("Frame", ScreenGui)
-    DCM.Size = UDim2.new(0, 500, 0, 350)
+    DCM.Name = "DCM_Window"
+    DCM.Size = UDim2.new(0, 500, 0, 400) -- Увеличили размер для чата
     DCM.Position = UDim2.new(0.05, 0, 0.05, 0)
     DCM.BackgroundColor3 = Color3.new(0,0,0)
+    DCM.BorderSizePixel = 2
+    DCM.Active = true
+    DCM.Draggable = true
+
+    -- 1. СЕКЦИЯ NETWORK (ВЕРХНЯЯ ПАНЕЛЬ)
+    local NetPanel = Instance.new("TextLabel", DCM)
+    NetPanel.Size = UDim2.new(1, 0, 0, 50)
+    NetPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    NetPanel.TextColor3 = Color3.new(0, 1, 1)
+    NetPanel.TextSize = 14
+    NetPanel.TextXAlignment = "Left"
     
-    local Log = Instance.new("ScrollingFrame", DCM)
-    Log.Size = UDim2.new(1, 0, 1, -40)
-    Log.Position = UDim2.new(0, 0, 0, 40)
+    task.spawn(function()
+        while DCM.Parent do
+            local ping = math.random(30, 60)
+            local traffic = math.random(500, 2500)
+            NetPanel.Text = string.format("  [NETWORK]\n  IP: 185.122.0.%d | Ping: %dms\n  Traffic: %d kb/s | Status: ACTIVE", math.random(1,255), ping, traffic)
+            task.wait(1)
+        end
+    end)
+
+    -- 2. СЕКЦИЯ OUTPUT / CONSOLE (СЕРЕДИНА)
+    local LogScroll = Instance.new("ScrollingFrame", DCM)
+    LogScroll.Size = UDim2.new(1, -10, 0, 180)
+    LogScroll.Position = UDim2.new(0, 5, 0, 55)
+    LogScroll.CanvasSize = UDim2.new(0, 0, 10, 0)
+    LogScroll.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     
-    local Txt = Instance.new("TextLabel", Log)
-    Txt.Size = UDim2.new(1, 0, 10, 0)
-    Txt.TextColor3 = Color3.new(0, 1, 0)
-    Txt.TextXAlignment = "Left"
-    Txt.TextYAlignment = "Top"
-    Txt.Text = "--- DCM MEGA MENU INITIALIZED ---\n[INPUT]: Waiting...\n[OUTPUT]: Connecting to Server Node...\n[CONSOLE]: Bots Spawning... HTTP 200 OK\n[NET]: Traffic 15.4 MB/s"
+    local OutputText = Instance.new("TextLabel", LogScroll)
+    OutputText.Size = UDim2.new(1, 0, 1, 0)
+    OutputText.TextColor3 = Color3.new(0, 1, 0)
+    OutputText.TextXAlignment = "Left"
+    OutputText.TextYAlignment = "Top"
+    OutputText.Text = "--- DCM MEGA MENU INITIALIZED ---\n[INPUT]: Access Granted\n[SYSTEM]: BotNet Protocol Loaded\n[CONSOLE]: Ready for Deployment..."
+
+    -- 3. СЕКЦИЯ CUSTOM CHAT (НИЗ)
+    local ChatFrame = Instance.new("ScrollingFrame", DCM)
+    ChatFrame.Name = "CustomChat"
+    ChatFrame.Size = UDim2.new(1, -10, 0, 150)
+    ChatFrame.Position = UDim2.new(0, 5, 1, -155)
+    ChatFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    ChatFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
+
+    local ChatList = Instance.new("UIListLayout", ChatFrame)
+    ChatList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+
+    -- Логика перехвата новых игроков в кастомный чат
+    game.Players.PlayerAdded:Connect(function(plr)
+        local msg = Instance.new("TextLabel", ChatFrame)
+        msg.Size = UDim2.new(1, 0, 0, 20)
+        msg.Text = "[SYSTEM]: User " .. plr.Name .. " detected on Node."
+        msg.TextColor3 = Color3.new(1, 0, 0)
+        msg.BackgroundTransparency = 1
+        msg.TextXAlignment = "Left"
+    end)
+    
+    print("DCM Mode Activated: All Systems Green.")
 end)
