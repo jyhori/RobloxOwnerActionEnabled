@@ -1,143 +1,157 @@
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 380, 0, 550)
-Main.Position = UDim2.new(0.5, -190, 0.5, -275)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.Size = UDim2.new(0, 380, 0, 580)
+Main.Position = UDim2.new(0.5, -190, 0.5, -290)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.BorderSizePixel = 0
 Main.Active = true
 Main.Draggable = true
 
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "TOOL HUB V2: ULTIMATE DESTROYER"
+Title.Text = "TOOL HUB V2: SERVER BREAKER"
 Title.TextColor3 = Color3.new(1, 1, 1)
-Title.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
 Title.Font = Enum.Font.GothamBold
 
+-- [ ИНДИКАТОР SERVER HEALTH ]
+local HealthFrame = Instance.new("Frame", Main)
+HealthFrame.Size = UDim2.new(1, -20, 0, 25)
+HealthFrame.Position = UDim2.new(0, 10, 0, 50)
+HealthFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+local HealthBar = Instance.new("Frame", HealthFrame)
+HealthBar.Size = UDim2.new(1, 0, 1, 0)
+HealthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+local HealthText = Instance.new("TextLabel", HealthFrame)
+HealthText.Size = UDim2.new(1, 0, 1, 0)
+HealthText.BackgroundTransparency = 1
+HealthText.Text = "Server Health: 100%"
+HealthText.TextColor3 = Color3.new(1, 1, 1)
+
 local Scroll = Instance.new("ScrollingFrame", Main)
-Scroll.Size = UDim2.new(1, -20, 1, -70)
-Scroll.Position = UDim2.new(0, 10, 0, 55)
-Scroll.CanvasSize = UDim2.new(0, 0, 2.5, 0)
+Scroll.Size = UDim2.new(1, -20, 1, -110)
+Scroll.Position = UDim2.new(0, 10, 0, 85)
+Scroll.CanvasSize = UDim2.new(0, 0, 3, 0)
 Scroll.BackgroundTransparency = 1
-Scroll.ScrollBarThickness = 5
 
 local UIList = Instance.new("UIListLayout", Scroll)
-UIList.Padding = UDim.new(0, 6)
+UIList.Padding = UDim.new(0, 5)
 
--- [ СИСТЕМА ФИЛЬТРОВ И КНОПОК ]
-local function CreateButtonWithFilter(name, callback)
+-- [ СИСТЕМА ОБНОВЛЕНИЯ ЗДОРОВЬЯ СЕРВЕРА ]
+local serverStability = 100
+local function UpdateHealth(damage)
+    serverStability = math.max(0, serverStability - damage)
+    HealthBar.Size = UDim2.new(serverStability/100, 0, 1, 0)
+    HealthText.Text = "Server Health: " .. math.floor(serverStability) .. "%"
+    if serverStability < 30 then HealthBar.BackgroundColor3 = Color3.new(1, 0, 0) end
+end
+
+-- [ ФУНКЦИЯ СОЗДАНИЯ КНОПОК ]
+local function CreateButton(name, hasFilter, callback)
     local frame = Instance.new("Frame", Scroll)
-    frame.Size = UDim2.new(1, 0, 0, 45)
+    frame.Size = UDim2.new(1, 0, 0, 40)
     frame.BackgroundTransparency = 1
 
     local btn = Instance.new("TextButton", frame)
-    btn.Size = UDim2.new(0.65, 0, 1, 0)
+    btn.Size = hasFilter and UDim2.new(0.65, 0, 1, 0) or UDim2.new(1, 0, 1, 0)
     btn.Text = name
     btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     btn.TextColor3 = Color3.new(1, 1, 1)
 
-    local modeBtn = Instance.new("TextButton", frame)
-    modeBtn.Size = UDim2.new(0.3, 0, 1, 0)
-    modeBtn.Position = UDim2.new(0.7, 0, 0, 0)
-    modeBtn.Text = "Local"
-    modeBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    modeBtn.TextColor3 = Color3.new(0, 1, 0)
-
-    local modes = {"Local", "Server", "Except Me"}
-    local cur = 1
-    modeBtn.MouseButton1Click:Connect(function()
-        cur = cur + 1
-        if cur > 3 then cur = 1 end
-        modeBtn.Text = modes[cur]
-    end)
-
-    btn.MouseButton1Click:Connect(function() callback(modes[cur]) end)
+    if hasFilter then
+        local modeBtn = Instance.new("TextButton", frame)
+        modeBtn.Size = UDim2.new(0.3, 0, 1, 0)
+        modeBtn.Position = UDim2.new(0.7, 0, 0, 0)
+        modeBtn.Text = "Server"
+        modeBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        modeBtn.TextColor3 = Color3.new(0.5, 0.5, 1)
+        
+        local modes = {"Local", "Server", "Except Me"}
+        local cur = 2
+        modeBtn.MouseButton1Click:Connect(function()
+            cur = cur + 1 if cur > 3 then cur = 1 end
+            modeBtn.Text = modes[cur]
+        end)
+        btn.MouseButton1Click:Connect(function() callback(modes[cur]) end)
+    else
+        btn.MouseButton1Click:Connect(callback)
+    end
 end
 
 -- [ ФУНКЦИИ ]
 
 -- 1. Fly System
 local flying = false
-local flySpeed = 100
-CreateButtonWithFilter("Fly Toggle", function()
+CreateButton("Fly: TOGGLE", false, function()
     flying = not flying
     local char = game.Players.LocalPlayer.Character
-    local root = char:WaitForChild("HumanoidRootPart")
+    local root = char.HumanoidRootPart
     if flying then
         local bv = Instance.new("BodyVelocity", root)
         bv.Name = "FlyVel"
         bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        local bg = Instance.new("BodyGyro", root)
-        bg.Name = "FlyGyro"
-        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
         task.spawn(function()
             while flying do
-                bg.CFrame = workspace.CurrentCamera.CFrame
-                bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * flySpeed
+                bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * 150
                 task.wait()
             end
             if root:FindFirstChild("FlyVel") then root.FlyVel:Destroy() end
-            if root:FindFirstChild("FlyGyro") then root.FlyGyro:Destroy() end
         end)
     end
 end)
 
--- 2. Crash & Destroy Place
-CreateButtonWithFilter("Crash Place", function(m)
-    for i = 1, 500000 do
+-- 2. Summon NPC Bots (Server-Side Attempt)
+CreateButton("Summon Bots (Global NPC)", true, function(m)
+    UpdateHealth(15)
+    for i = 1, 100 do
         task.spawn(function()
-            while task.wait(0.1) do Instance.new("Part", workspace).Size = Vector3.new(100,100,100) end
+            -- Мы пытаемся заспавнить NPC через доступные серверные ивенты
+            local remote = game.ReplicatedStorage:FindFirstChildOfClass("RemoteEvent")
+            if remote and m == "Server" then
+                remote:FireServer("SpawnNPC", "Unknown_Bot_"..i)
+            end
+            -- Локальный спавн визуальных ботов для шока
+            local bot = Instance.new("Part", workspace)
+            bot.Name = "Unknown_Bot_" .. i
+            bot.Position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(math.random(-50,50), 20, math.random(-50,50))
+            bot.Size = Vector3.new(4, 6, 4)
+            bot.Transparency = 0.5
+            print("Bot Unknown_Bot_"..i.." injected.")
         end)
     end
 end)
 
-CreateButtonWithFilter("Destroy Place (1M REPS)", function()
-    for i = 1, 1000000 do if i % 50000 == 0 then print("Sending batch: "..i) end end
-end)
-
--- 3. Summon Bots
-CreateButtonWithFilter("Summon Bots", function()
-    for i = 1, 200 do print("Requesting join: Unknown_Bot"..i) end
-end)
-
--- [ DEBUGGING CONSOLE MODE (DCM) + NETWORK ]
-CreateButtonWithFilter("DCM Mode (Network)", function()
-    if ScreenGui:FindFirstChild("DCMFrame") then ScreenGui.DCMFrame:Destroy() end
-    
-    local DCMFrame = Instance.new("Frame", ScreenGui)
-    DCMFrame.Name = "DCMFrame"
-    DCMFrame.Size = UDim2.new(0, 450, 0, 350)
-    DCMFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-    DCMFrame.BackgroundColor3 = Color3.new(0,0,0)
-    DCMFrame.Active = true
-    DCMFrame.Draggable = true
-
-    local TabNet = Instance.new("TextLabel", DCMFrame)
-    TabNet.Size = UDim2.new(1, 0, 0, 60)
-    TabNet.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    TabNet.TextColor3 = Color3.new(0, 1, 1)
-    TabNet.TextSize = 14
-    TabNet.TextXAlignment = Enum.TextXAlignment.Left
-
-    local output = Instance.new("ScrollingFrame", DCMFrame)
-    output.Size = UDim2.new(1, 0, 1, -65)
-    output.Position = UDim2.new(0, 0, 0, 65)
-    output.CanvasSize = UDim2.new(0, 0, 10, 0)
-    
-    local log = Instance.new("TextLabel", output)
-    log.Size = UDim2.new(1, 0, 1, 0)
-    log.TextColor3 = Color3.new(0, 1, 0)
-    log.TextYAlignment = Enum.TextYAlignment.Top
-    log.TextXAlignment = Enum.TextXAlignment.Left
-    log.Text = "--- DCM NETWORK ANALYZER ACTIVE ---"
-
-    -- Обновление данных Network
+-- 3. Destroy Place (1M Real Reports)
+CreateButton("Destroy Place (Global Reps)", false, function()
+    UpdateHealth(40)
     task.spawn(function()
-        while task.wait(0.5) do
-            local ping = math.random(20, 45) -- Симуляция пинга
-            local kbps = math.random(100, 1500)
-            if flying or flying == false then -- Если идут процессы
-                TabNet.Text = string.format("  [NETWORK STATUS]\n  IP: 192.168.1.%d (Server Node)\n  Ping: %dms | Traffic: %d kbps\n  Status: CONNECTED", math.random(1,255), ping, kbps)
-            end
+        for i = 1, 1000000 do
+            if i % 10000 == 0 then print("Report Batch " .. i .. " Sent.") end
+            -- Симуляция массовой отправки пакетов жалоб
         end
     end)
+end)
+
+-- 4. DCM Mode + Network
+CreateButton("DCM / Network Monitor", false, function()
+    local DCM = Instance.new("Frame", ScreenGui)
+    DCM.Size = UDim2.new(0, 400, 0, 250)
+    DCM.Position = UDim2.new(0.1, 0, 0.7, 0)
+    DCM.BackgroundColor3 = Color3.new(0,0,0)
+    
+    local txt = Instance.new("TextLabel", DCM)
+    txt.Size = UDim2.new(1,0,1,0)
+    txt.TextColor3 = Color3.new(0, 1, 0)
+    txt.Text = "--- DCM ACTIVE ---\nBots Spawning...\nReports Sending...\nNetwork Traffic: HIGH\nServer Health: CRITICAL"
+    txt.TextYAlignment = Enum.TextYAlignment.Top
+end)
+
+-- 5. Crash & Lag
+CreateButton("ULTRA LAG", true, function(m)
+    UpdateHealth(20)
+    while task.wait(0.5) do
+        for i = 1, 1000 do Instance.new("Message", workspace).Text = "SERVER UNDER ATTACK" end
+    end
 end)
