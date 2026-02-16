@@ -82,8 +82,9 @@ CreateComplexRow("Physics (FPS)", {"FPS Value"}, function(vals, mode)
 end)
 
 -- 2. Speedhack
-CreateComplexRow("Speedhack", {"Speed"}, function(vals)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = tonumber(vals[1]) or 16
+CreateComplexRow("Speedhack:", UDim2.new(0, 10, 0, 90), true, function(val, mode)
+    local s = tonumber(val) or 16
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
 
 -- 3. Noclip (Toggle)
