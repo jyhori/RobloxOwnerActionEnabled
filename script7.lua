@@ -82,7 +82,7 @@ CreateComplexRow("Physics (FPS)", {"FPS Value"}, function(vals, mode)
 end)
 
 -- 2. Speedhack
-CreateComplexRow("Speedhack:", UDim2.new(0, 10, 0, 90), true, function(val, mode)
+CreateComplexRow("Speedhack", {"Speed"}, function(vals)
     local s = tonumber(val) or 16
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
