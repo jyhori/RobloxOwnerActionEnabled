@@ -83,7 +83,7 @@ end)
 
 -- 2. Speedhack
 CreateComplexRow("Speedhack", {"Speed"}, function(vals)
-    local s = tonumber(val) or 16
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = tonumber(vals[1]) or 16
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
 end)
 
