@@ -70,7 +70,7 @@ end
 
 -- ЛОГИКА ЛАГА (Network/Remote Stress Test)
 local function ExecuteLag(intensity, mode)
-    if mode == "Local" then
+    if mode == "Global" then
         -- Локальное замедление через нагрузку цикла
         local start = os.clock()
         while os.clock() - start < 0.5 do end 
