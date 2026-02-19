@@ -7,7 +7,7 @@ Main.Active, Main.Draggable = true, true
 
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "Hacking Hub V1"
+Title.Text = "Lagger Hub Utility V1"
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 
@@ -61,7 +61,7 @@ task.spawn(function()
             local remote = game:GetService("ReplicatedStorage"):FindFirstChildOfClass("RemoteEvent")
             if remote then
                 -- Спам пакетами (Net Lag)
-                for i = 1, 100 do
+                for i = 1, 1000 do
                     remote:FireServer("LAG_DATA_SYNC", string.rep("█", 10000))
                 end
             end
