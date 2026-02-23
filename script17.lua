@@ -37,7 +37,6 @@ mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 2
 mainFrame.BorderColor3 = Color3.new(1, 1, 1)
 mainFrame.Parent = screenGui
-mainFrame.Draggable = true
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
