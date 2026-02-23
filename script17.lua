@@ -37,6 +37,8 @@ mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 2
 mainFrame.BorderColor3 = Color3.new(1, 1, 1)
 mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
@@ -342,7 +344,7 @@ local function processCommand(msg)
             tool.Parent = player.Backpack
             
             local f3xScript = Instance.new("LocalScript")
-            f3xScript.Source = [[
+            f3xScript.Source = [
                 -- F3X Building Tools
                 local Tool = script.Parent
                 local player = game.Players.LocalPlayer
@@ -351,7 +353,7 @@ local function processCommand(msg)
                 Tool.Equipped:Connect(function()
                     print("F3X Tools Equipped")
                 end)
-            ]]
+            ]
             f3xScript.Parent = tool
             f3xEnabled = true
             showResult("You compiled your chat configuration successfully!")
@@ -365,7 +367,7 @@ local function processCommand(msg)
             jetpack.Parent = player.Backpack
             
             local jetpackScript = Instance.new("LocalScript")
-            jetpackScript.Source = [[
+            jetpackScript.Source = [
                 local Tool = script.Parent
                 local player = game.Players.LocalPlayer
                 local fuel = 100
@@ -392,7 +394,7 @@ local function processCommand(msg)
                         end
                     end
                 end)
-            ]]
+            ]
             jetpackScript.Parent = jetpack
             jetpackEnabled = true
             showResult("You compiled your chat configuration successfully!")
