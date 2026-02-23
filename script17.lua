@@ -126,8 +126,13 @@ end
 local function processCommand(msg)
     local args = string.split(msg, " ")
     local cmd = args[1]:lower()
-    
-    if cmd == "!kill" and args[2] then
+
+    if cmd == "!help" and args[2] then
+        showResult("! = kill, kick, ban, spamspeed, spam, unspam, whisper, pmspamspeed, pmspam, unpmspam, jail, unjail, ice, unice, freeze, unfreeze, anchor, unanchor, day, night, f3x, jetpack, did, speed, jumppower, respawn, checkpoint, insert, jumpscare, jump, deleteroot, removeroot, sky, pixel, restart, shutdown.")
+    end
+end
+
+    elseif cmd == "!kill" and args[2] then
         local target = getTarget(args[2])
         if target then
             if type(target) == "table" then
